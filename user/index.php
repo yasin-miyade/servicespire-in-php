@@ -19,7 +19,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h1 id="logo-text" class="text-2xl font-bold text-blue-500 transition-all"><img
                         src="../assets/images/logo1.jpg" alt="" class="w-40 "></h1>
-                <button onclick="toggleSidebar()" class="text-black text-2xl focus:outline-none">☰</button>
+                <button onclick="toggleSidebar()" class="text-black text-2xl ml-4 focus:outline-none">☰</button>
             </div>
             <nav>
                 <ul>
@@ -35,8 +35,8 @@
                     foreach ($menuItems as $key => $value) {
                         $activeClass = ($page === $key) ? "bg-purple-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200";
                         echo "<li class='mb-2'>
-                                <a href='?page=$key' class='flex items-center p-4 rounded-lg $activeClass'>
-                                    <i class='fa-solid {$value[1]} fa-lg mr-1'></i>
+                                <a href='?page=$key' class='flex items-center p-4 min-h-[50px] rounded-lg $activeClass'>
+                                    <i class='fa-solid {$value[1]} fa-lg pr-1 ml-1 '></i>
                                     <span class='sidebar-text'>{$value[0]}</span>
                                 </a>
                               </li>";
@@ -45,7 +45,7 @@
 
                     <li class="mb-2">
                         <a href="logout.php"
-                            class="flex items-center p-4 rounded-lg bg-red-500 text-white hover:bg-red-600">
+                            class="flex items-center p-4 rounded-lg min-h-[50px] bg-red-500 text-white hover:bg-red-600">
                             <i class="fa-solid fa-sign-out-alt fa-lg mr-1"></i>
                             <span class="sidebar-text">Logout</span>
                         </a>

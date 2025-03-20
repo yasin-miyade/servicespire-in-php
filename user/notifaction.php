@@ -19,7 +19,7 @@ $user_email = $_SESSION['email'];
     <link rel="stylesheet" href="https://cdn.tailwindcss.com">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery for AJAX -->
 </head>
-<body class="bg-gray-100 font-inter p-6">
+<body class="bg-gray-100 font-inter p-6 ">
     <h2 class="text-2xl font-semibold mb-4">Notifications</h2>
 
     <ul id="notification-list" class="bg-white shadow-md rounded-lg p-6 space-y-4">

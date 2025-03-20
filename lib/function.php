@@ -17,6 +17,11 @@ class db_functions
         }
     }
 
+
+    public function connect() {
+        return $this->con;
+    }
+
             //contact data function
     public function save_contact_data($username, $email, $phone, $message) {
         $date = date("Y-m-d");
@@ -34,7 +39,7 @@ class db_functions
         return $success;
     }
 
-                    //user sign up function
+                    // user sign up function
     public function save_sign_up_data($first_name, $last_name, $dob, $gender, $mobile, $address, $email, $password, $id_proof_path) {
         // Store password as plain text (not recommended for production)
         $query = "INSERT INTO sign_up (first_name, last_name, dob, gender, mobile, address, email, password, id_proof) 
@@ -79,11 +84,22 @@ class db_functions
     }
 
     //user post form data storing
-	public function insertWorkPost($name, $email, $mobile, $city, $work, $deadline, $reward, $message) {
-		$stmt = $this->con->prepare("INSERT INTO work_posts (name, email, mobile, city, work, deadline, reward, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-		$stmt->bind_param("ssssssss", $name, $email, $mobile, $city, $work, $deadline, $reward, $message);
-		return $stmt->execute();
-	}
+    public function insertWorkPost($name, $email, $mobile, $city, $work, $deadline, $reward, $message, $from_location, $to_location) {
+        $stmt = $this->con->prepare("INSERT INTO work_posts (name, email, mobile, city, work, deadline, reward, message, from_location, to_location) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    
+        if (!$stmt) {
+            die("Prepare failed: " . $this->con->error); // Show error if prepare fails
+        }
+    
+        $stmt->bind_param("ssssssssss", $name, $email, $mobile, $city, $work, $deadline, $reward, $message, $from_location, $to_location);
+    
+        if (!$stmt->execute()) {
+            die("Execute failed: " . $stmt->error); // Show error if execution fails
+        }
+    
+        return true;
+    }
+    
 	
 //show the users post at helper dashboard
 public function getWorkPosts() {
@@ -99,11 +115,12 @@ public function getWorkPosts() {
 
 //users own posts 
 public function getUserWorkPosts($email) {
-    $stmt = $this->con->prepare("SELECT * FROM work_posts WHERE email = ?");
+    $stmt = $this->con->prepare("SELECT * FROM work_posts WHERE email = ? ORDER BY created_at DESC");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     return $stmt->get_result();
 }
+
 
 // Fetch a single post by ID
 function getUserWorkPostById($post_id, $email) {
@@ -120,6 +137,16 @@ function updateUserWorkPost($post_id, $email, $work, $city, $deadline, $reward, 
     $stmt = $this->con->prepare("UPDATE work_posts SET work = ?, city = ?, deadline = ?, reward = ?, message = ? WHERE id = ? AND email = ?");
     $stmt->bind_param("sssssis", $work, $city, $deadline, $reward, $message, $post_id, $email);
     return $stmt->execute();
+}
+
+// Delete a user's post
+public function deleteWorkPost($post_id) {
+    $conn = $this->connect();
+    $stmt = $conn->prepare("DELETE FROM work_posts WHERE id = ?");
+    $stmt->bind_param("i", $post_id);
+    $result = $stmt->execute();
+    $stmt->close();
+    return $result;
 }
 
 
@@ -286,6 +313,95 @@ public function getUserById($id) {
 }
 
 
+
+
+///profile autofill 
+
+// Add these functions to your db_functions class in function.php
+
+public function get_user_by_id($user_id) {
+    $query = "SELECT * FROM sign_up WHERE id = ?";
+    $stmt = $this->con->prepare($query);
+    
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $this->con->error);
+        return null;
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc();
+    } else {
+        return null;
+    }
+}
+
+public function update_user_profile($user_id, $first_name, $last_name, $dob, $gender, $mobile, $address, $bio, $profile_photo = null) {
+    // If bio column doesn't exist, you may need to alter the table first
+    // ALTER TABLE sign_up ADD COLUMN bio TEXT;
+    // ALTER TABLE sign_up ADD COLUMN profile_photo VARCHAR(255);
+    
+    $query = "UPDATE sign_up SET 
+              first_name = ?, 
+              last_name = ?, 
+              dob = ?, 
+              gender = ?, 
+              mobile = ?, 
+              address = ?, 
+              bio = ?";
+              
+    $params = [$first_name, $last_name, $dob, $gender, $mobile, $address, $bio];
+    $types = "sssssss";
+    
+    // Add profile photo to update if provided
+    if ($profile_photo !== null) {
+        $query .= ", profile_photo = ?";
+        $params[] = $profile_photo;
+        $types .= "s";
+    }
+    
+    $query .= " WHERE id = ?";
+    $params[] = $user_id;
+    $types .= "i";
+    
+    $stmt = $this->con->prepare($query);
+    
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $this->con->error);
+        return false;
+    }
+    
+    $stmt->bind_param($types, ...$params);
+    
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        error_log("Execute failed: " . $stmt->error);
+        return false;
+    }
+}
+
+public function delete_user_account($user_id) {
+    $query = "DELETE FROM sign_up WHERE id = ?";
+    $stmt = $this->con->prepare($query);
+    
+    if (!$stmt) {
+        error_log("Error preparing statement: " . $this->con->error);
+        return false;
+    }
+    
+    $stmt->bind_param("i", $user_id);
+    
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        error_log("Execute failed: " . $stmt->error);
+        return false;
+    }
+}
 
 
 }
