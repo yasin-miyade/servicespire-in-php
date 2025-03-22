@@ -103,7 +103,7 @@ class db_functions
 	
 //show the users post at helper dashboard
 public function getWorkPosts() {
-    $query = "SELECT * FROM work_posts ORDER BY id DESC";
+    $query = "SELECT * FROM work_posts WHERE deleted = 0 ORDER BY id DESC";
     $result = $this->con->query($query);
 
     if (!$result) {
@@ -112,6 +112,8 @@ public function getWorkPosts() {
 
     return $result->fetch_all(MYSQLI_ASSOC);
 }
+
+
 
 //users own posts 
 public function getUserWorkPosts($email) {
@@ -159,6 +161,24 @@ public function getTotalRequests() {
     $row = $result->fetch_assoc();
     return $row['total'];
 }
+
+public function getPendingRequests() {
+    $query = "SELECT COUNT(*) as count FROM work_posts WHERE status = 'pending'";
+    $result = $this->con->query($query); // Changed to $this->con
+    $row = $result->fetch_assoc();
+    return $row['count'];
+}
+
+public function getCompletedTasks() {
+    $query = "SELECT COUNT(*) as count FROM work_posts WHERE status = 'completed'";
+    $result = $this->con->query($query); // Changed to $this->con
+    $row = $result->fetch_assoc();
+    return $row['count'];
+}
+
+
+
+////register
 
 public function register_user($first_name, $last_name, $email, $mobile, $gender, $dob, $address, $password, $id_proof, $id_proof_file)
 {
@@ -230,6 +250,7 @@ public function isHelperAssigned($post_id, $helper_email) {
     return ($result['assigned_helper_email'] === $helper_email);
 }
 
+
 public function getUserByPostId($post_id) {
     $query = "SELECT email FROM work_posts WHERE id = ?";
     $stmt = $this->con->prepare($query);
@@ -253,6 +274,15 @@ public function getUserNotifications($user_email) {
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
+
+
+//helper dashboard working
+
+
+
+
+
+
 
 
 //admin dashboard working
@@ -315,7 +345,7 @@ public function getUserById($id) {
 
 
 
-///profile autofill 
+///profile autofill of user
 
 // Add these functions to your db_functions class in function.php
 
@@ -402,6 +432,12 @@ public function delete_user_account($user_id) {
         return false;
     }
 }
+
+
+
+
+//profile autofill of helper
+
 
 
 }

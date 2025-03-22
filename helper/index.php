@@ -1,4 +1,10 @@
 <?php
+// Place this at the very top of the file - no whitespace before the opening PHP tag
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start output buffering
+ob_start();
 session_start();
 
 // Redirect to login if the user is not logged in
@@ -6,9 +12,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
-// $helper_name = $_SESSION['user_name'];
-// $helper_email = $_SESSION['user_email'];
+// Note: No ob_end_flush() here to prevent output before redirects
 ?>
 
 <!DOCTYPE html>
@@ -102,3 +106,7 @@ if (!isset($_SESSION['user_id'])) {
     </script>
 </body>
 </html>
+<?php
+// Place this at the very end to ensure all content is sent properly
+ob_end_flush();
+?>
